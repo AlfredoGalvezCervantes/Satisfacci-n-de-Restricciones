@@ -1,0 +1,66 @@
+def backtrack_search(csp):
+    return backtrack({}, csp)
+
+def backtrack(assignment, csp):
+    if len(assignment) == len(csp):
+        return assignment  # Se encontró una solución
+    
+    var = select_unassigned_variable(assignment, csp)
+    for value in order_domain_values(var, assignment, csp):
+        if is_consistent(var, value, assignment, csp):
+            assignment[var] = value
+            result = backtrack(assignment, csp)
+            if result is not None:
+                return result
+            del assignment[var]
+    return None
+
+def select_unassigned_variable(assignment, csp):
+    # Selecciona una variable no asignada (puede variar según la heurística)
+    for var in csp:
+        if var not in assignment:
+            return var
+
+def order_domain_values(var, assignment, csp):
+    # Ordena los valores de dominio para una variable (puede variar según la heurística)
+    return csp[var]
+
+def is_consistent(var, value, assignment, csp):
+    # Verifica si la asignación actual es consistente con las restricciones
+    for neighbor, constraint in csp[var].items():
+        if neighbor in assignment:
+            if not constraint(value, assignment[neighbor]):
+                return False
+    return True
+
+# Ejemplo de uso
+def main():
+    # Define un CSP de ejemplo
+    csp = {
+        'A': {1, 2, 3},
+        'B': {2, 3, 4},
+        'C': {1, 2, 3},
+        'D': {2, 3}
+    }
+
+    # Define las restricciones (en este caso, simplemente comprobando si los valores son distintos)
+    def constraint_diff(x, y):
+        return x != y
+
+    csp['A']['B'] = constraint_diff
+    csp['B']['A'] = constraint_diff
+    csp['B']['C'] = constraint_diff
+    csp['C']['B'] = constraint_diff
+    csp['C']['D'] = constraint_diff
+    csp['D']['C'] = constraint_diff
+
+    solution = backtrack_search(csp)
+
+    if solution is not None:
+        print("Solución encontrada:")
+        print(solution)
+    else:
+        print("No se encontró una solución.")
+
+if __name__ == "__main__":
+    main()
